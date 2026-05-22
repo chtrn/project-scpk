@@ -305,22 +305,18 @@ with tab3:
 
 # ═══════════ TAB 4 – DATA LENGKAP ════════════════════════════════════════════
 with tab4:
-
     st.subheader("Proses Ranking Risiko Diabetes")
-
-    if st.button("Hitung Ranking Risiko Diabetes"):
-
         # ── TOP 10 PASIEN RISIKO TERTINGGI ──
-        st.subheader("Top 10 Pasien Risiko Tertinggi")
+    st.subheader("Top 10 Pasien Risiko Tertinggi")
 
-        top10 = df_hasil.sort_values(
+    top10 = df_hasil.sort_values(
             "Skor AHP",
             ascending=False
-        ).head(10).copy()
+    ).head(10).copy()
 
-        top10["Ranking"] = range(1, len(top10) + 1)
+    top10["Ranking"] = range(1, len(top10) + 1)
 
-        st.dataframe(
+    st.dataframe(
             top10[[
                 "Ranking",
                 "Glucose",
@@ -330,33 +326,32 @@ with tab4:
                 "Risiko"
             ]],
             use_container_width=True
-        )
+    )
 
-        st.bar_chart(top10.set_index("Ranking")["Skor AHP"])
 
         # ── DATA LENGKAP ──
-        st.subheader("Hasil Penilaian Seluruh Pasien")
+    st.subheader("Hasil Penilaian Seluruh Pasien")
 
-        f1, f2 = st.columns(2)
+    f1, f2 = st.columns(2)
 
-        filter_r = f1.multiselect(
+    filter_r = f1.multiselect(
             "Filter risiko:",
             ["Rendah", "Sedang", "Tinggi"],
             default=["Rendah", "Sedang", "Tinggi"]
-        )
+    )
 
-        filter_o = f2.selectbox(
-            "Filter outcome:",
-            ["Semua", "Positif (1)", "Negatif (0)"]
-        )
+    filter_o = f2.selectbox(
+        "Filter outcome:",
+        ["Semua", "Positif (1)", "Negatif (0)"]
+    )
 
-        tampil = df_hasil[df_hasil["Risiko"].isin(filter_r)].copy()
+    tampil = df_hasil[df_hasil["Risiko"].isin(filter_r)].copy()
 
-        if filter_o == "Positif (1)":
-            tampil = tampil[tampil["Outcome"] == 1]
+    if filter_o == "Positif (1)":
+        tampil = tampil[tampil["Outcome"] == 1]
 
-        elif filter_o == "Negatif (0)":
-            tampil = tampil[tampil["Outcome"] == 0]
+    elif filter_o == "Negatif (0)":
+        tampil = tampil[tampil["Outcome"] == 0]
 
         tampil = tampil.sort_values(
             "Skor AHP",
@@ -365,108 +360,80 @@ with tab4:
 
         tampil.index += 1
 
-        def warnai(val):
-            if val == "Tinggi":
-                return "background-color:#fde8e8"
+    def warnai(val):
+        if val == "Tinggi":
+            return "background-color:#fde8e8"
 
-            if val == "Sedang":
-                return "background-color:#fff8e1"
+        if val == "Sedang":
+            return "background-color:#fff8e1"
 
-            if val == "Rendah":
-                return "background-color:#e8f5e9"
+        if val == "Rendah":
+            return "background-color:#e8f5e9"
 
-            return ""
+        return ""
 
-        kolom = ["Risiko", "Skor AHP"] + KEYS + ["Outcome"]
+    kolom = ["Risiko", "Skor AHP"] + KEYS + ["Outcome"]
 
-        st.dataframe(
-            tampil[kolom]
-            .rename(columns=KRITERIA)
-            .style
-            .applymap(warnai, subset=["Risiko"])
-            .format({
-                "Skor AHP": "{:.4f}",
-                "BMI": "{:.1f}",
-                "DiabetesPedigreeFunction": "{:.3f}"
-            }),
-            use_container_width=True,
-            height=420
-        )
+    st.dataframe(
+        tampil[kolom].rename(columns=KRITERIA).style.applymap(warnai, subset=["Risiko"])
+        .format({
+            "Skor AHP": "{:.4f}",
+            "BMI": "{:.1f}",
+            "DiabetesPedigreeFunction": "{:.3f}"
+        }),
+        use_container_width=True,
+        height=420
+    )
 
-        st.caption(f"Menampilkan {len(tampil)} dari {total} pasien")
+    st.caption(f"Menampilkan {len(tampil)} dari {total} pasien")
 
         # ── CROSSTAB ──
-        st.subheader("Tabulasi Risiko vs Outcome Aktual")
+    st.subheader("Tabulasi Risiko vs Outcome Aktual")
 
-        crosstab = pd.crosstab(
-            df_hasil["Risiko"],
-            df_hasil["Outcome"],
-            rownames=["Risiko AHP"],
-            colnames=["Outcome"]
-        )
+    crosstab = pd.crosstab(
+        df_hasil["Risiko"],
+        df_hasil["Outcome"],
+        rownames=["Risiko AHP"],
+        colnames=["Outcome"]
+    )
 
-        st.dataframe(crosstab, use_container_width=True)
+    st.dataframe(crosstab, use_container_width=True)
 
-        # ── EVALUASI SISTEM ──
-        st.subheader("Evaluasi Sistem")
-
-        prediksi = df_hasil["Risiko"].apply(
-            lambda x: 1 if x == "Tinggi" else 0
-        )
-
-        akurasi = (
-            (prediksi == df_hasil["Outcome"]).mean()
-        ) * 100
-
-        st.metric(
-            "Akurasi Prediksi Sederhana",
-            f"{akurasi:.2f}%"
-        )
-
-        if akurasi >= 80:
-            st.success("Sistem memiliki tingkat akurasi sangat baik.")
-
-        elif akurasi >= 60:
-            st.warning("Sistem memiliki akurasi cukup baik.")
-
-        else:
-            st.error("Sistem masih memiliki akurasi rendah.")
-
-
+    
         # ── KESIMPULAN ──
-        st.subheader("Kesimpulan")
+    st.subheader("Kesimpulan")
 
-        tertinggi = df_hasil.sort_values(
-            "Skor AHP",
-            ascending=False
-        ).iloc[0]
+    tertinggi = df_hasil.sort_values(
+        "Skor AHP",
+        ascending=False
+    ).iloc[0]
 
-        terendah = df_hasil.sort_values(
-            "Skor AHP",
-            ascending=True
-        ).iloc[0]
+    terendah = df_hasil.sort_values(
+        "Skor AHP",
+        ascending=True
+    ).iloc[0]
 
-        st.success(
-            f"""
-            Pasien dengan risiko diabetes tertinggi memiliki skor AHP
-            sebesar {tertinggi['Skor AHP']:.4f}
-            dengan kategori risiko {tertinggi['Risiko']}.
-            """
-        )
+    st.success(
+        f"""
+        Pasien dengan risiko diabetes tertinggi memiliki skor AHP
+        sebesar {tertinggi['Skor AHP']:.4f}
+        dengan kategori risiko {tertinggi['Risiko']}.
+        """
+    )
 
-        st.info(
-            f"""
-            Pasien dengan risiko diabetes terendah memiliki skor AHP
-            sebesar {terendah['Skor AHP']:.4f}
-            dengan kategori risiko {terendah['Risiko']}.
-            """
-        )
+    st.info(
+        f"""
+        Pasien dengan risiko diabetes terendah memiliki skor AHP
+        sebesar {terendah['Skor AHP']:.4f}
+        dengan kategori risiko {terendah['Risiko']}.
+        """
+    )
 
-        st.write(
-            f"""
-            Berdasarkan hasil perhitungan metode AHP,
-            sebagian besar pasien berada pada kategori
-            risiko {jumlah.idxmax()} sebanyak
-            {jumlah.max()} pasien.
-            """
-        )
+    st.write(
+        f"""
+        Berdasarkan hasil perhitungan metode AHP,
+        sebagian besar pasien berada pada kategori
+        risiko {jumlah.idxmax()} sebanyak
+        {jumlah.max()} pasien.
+        """
+    )
