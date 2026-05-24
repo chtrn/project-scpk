@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ── Kriteria ──────────────────────────────────────────────────────────────────
+#kriteria
 KRITERIA = {
     "Glucose":                  "Glukosa",
     "BMI":                      "BMI",
@@ -32,7 +32,7 @@ MAT_DEFAULT = np.array([
 RI = {1:0, 2:0, 3:0.58, 4:0.90, 5:1.12,
       6:1.24, 7:1.32, 8:1.41, 9:1.45, 10:1.49}
 
-# ── Fungsi AHP ────────────────────────────────────────────────────────────────
+#fungsi ahp
 def hitung_bobot(mat):
     n     = mat.shape[0]
     norm  = mat / mat.sum(axis=0)
@@ -57,14 +57,14 @@ def level_risiko(skor, batas_r, batas_t):
     else:
         return "Tinggi"
 
-# ── Load data ─────────────────────────────────────────────────────────────────
+#load data
 @st.cache_data
 def load():
     return pd.read_csv("diabetes.csv")
 
 df = load()
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+#sidebar pengaturan
 with st.sidebar:
     st.header("Pengaturan")
 
@@ -88,7 +88,7 @@ with st.sidebar:
     else:
         mat = MAT_DEFAULT.copy()
 
-# ── Hitung AHP ────────────────────────────────────────────────────────────────
+#hitung bobot dan skor
 bobot, lam_max, ci, cr = hitung_bobot(mat)
 bobot_dict = dict(zip(KEYS, bobot))
 
@@ -106,16 +106,16 @@ df_hasil = df_hasil.sort_values(
 
 df_hasil["Ranking"] = range(1, len(df_hasil) + 1)
 
-# ── Header ────────────────────────────────────────────────────────────────────
+#header
 st.title("SPK Penentuan Tingkat Risiko Diabetes")
 st.caption("Metode AHP (Analytical Hierarchy Process) | Dataset: Pima Indians Diabetes (768 pasien)")
 st.divider()
 
-# ── Tabs ──────────────────────────────────────────────────────────────────────
+#tabs
 tab1, tab2, tab3, tab4 = st.tabs(["Ringkasan", "Bobot & Konsistensi", "Cek Pasien", "Data Lengkap"])
 
 
-# ═══════════ TAB 1 – RINGKASAN ═══════════════════════════════════════════════
+#tabs 1 - ringkasan
 with tab1:
     jumlah = df_hasil["Risiko"].value_counts()
     total  = len(df_hasil)
@@ -173,7 +173,7 @@ with tab1:
     plt.close()
 
 
-# ═══════════ TAB 2 – BOBOT & KONSISTENSI ═════════════════════════════════════
+#tabs 2 - bobot dan konsistensi
 with tab2:
     st.subheader("Matriks Perbandingan Berpasangan")
     mat_df = pd.DataFrame(mat, index=LABELS, columns=LABELS)
@@ -239,7 +239,7 @@ with tab2:
         st.error(f"CR = {cr:.4f} > 0.10 → Matriks tidak konsisten, perlu direvisi.")
 
 
-# ═══════════ TAB 3 – CEK PASIEN ══════════════════════════════════════════════
+#tabs 3 - cek pasien
 with tab3:
     st.subheader("Penilaian Risiko Pasien")
 
@@ -303,10 +303,9 @@ with tab3:
         )
 
 
-# ═══════════ TAB 4 – DATA LENGKAP ════════════════════════════════════════════
+#tabs 4 - data lengkap
 with tab4:
     st.subheader("Proses Ranking Risiko Diabetes")
-        # ── TOP 10 PASIEN RISIKO TERTINGGI ──
     st.subheader("Top 10 Pasien Risiko Tertinggi")
 
     top10 = df_hasil.sort_values(
@@ -328,8 +327,6 @@ with tab4:
             use_container_width=True
     )
 
-
-        # ── DATA LENGKAP ──
     st.subheader("Hasil Penilaian Seluruh Pasien")
 
     f1, f2 = st.columns(2)
@@ -387,7 +384,6 @@ with tab4:
 
     st.caption(f"Menampilkan {len(tampil)} dari {total} pasien")
 
-        # ── CROSSTAB ──
     st.subheader("Tabulasi Risiko vs Outcome Aktual")
 
     crosstab = pd.crosstab(
@@ -399,8 +395,6 @@ with tab4:
 
     st.dataframe(crosstab, use_container_width=True)
 
-    
-        # ── KESIMPULAN ──
     st.subheader("Kesimpulan")
 
     tertinggi = df_hasil.sort_values(
